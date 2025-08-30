@@ -1,7 +1,8 @@
 # CatHax! 🙀
 
-A small application that allows us to automate our cat feeders.
-This extends the features of the devices, so we can create feeding schedules and the cat doesn't have to wake us up at 3am for food.
+A small application that allows us to automate our cat feeders. This extends the
+features of the devices, so we can create feeding schedules and the cat doesn't
+have to wake us up at 3am for food.
 
 ## Features
 
@@ -99,17 +100,17 @@ Edit the `callDailyAPI()` function in `main.ts` to:
 ### Adding More Cron Jobs
 
 ```typescript
-import { cron } from "https://deno.land/x/deno_cron@v1.0.0/cron.ts";
+import { cron } from "https://deno.land/x/deno_cron@v1.0.0/cron.ts"
 
 // Add hourly job
 const hourlyJob = cron("0 * * * *", () => {
-	console.log("Hourly task executed");
-});
+	console.log("Hourly task executed")
+})
 
 // Add weekly job
 const weeklyJob = cron("0 9 * * 1", () => {
-	console.log("Weekly Monday task executed");
-});
+	console.log("Weekly Monday task executed")
+})
 ```
 
 ## Available Tasks
@@ -123,7 +124,7 @@ const weeklyJob = cron("0 9 * * 1", () => {
 The project uses the official Deno cron library:
 
 ```typescript
-import { cron } from "https://deno.land/x/deno_cron@v1.0.0/cron.ts";
+import { cron } from "https://deno.land/x/deno_cron@v1.0.0/cron.ts"
 ```
 
 ## API Configuration
