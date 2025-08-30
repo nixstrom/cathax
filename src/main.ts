@@ -56,7 +56,6 @@ if (!TOKEN) {
 
 // Example API call function
 async function callDailyAPI() {
-	console.log({ TOKEN: TOKEN + "lol" });
 	try {
 		console.log(
 			`[${new Date().toISOString()}] Starting API calls for ${
