@@ -1,0 +1,20 @@
+{
+	"tasks": {
+		"dev": "deno run --watch src/main.ts",
+		"start": "deno run --allow-net --allow-env --allow-read src/main.ts",
+		"test": "deno run --allow-net --allow-env --allow-read src/main_test.ts",
+		"bench": "deno run --allow-net src/main_bench.ts"
+	},
+	"fmt": {
+		"options": {
+			"useTabs": true,
+			"lineWidth": 80,
+			"indentWidth": 4,
+			"semiColons": false
+		},
+		"files": {
+			"include": ["./"],
+			"exclude": ["node_modules/", ".git/"]
+		}
+	}
+}

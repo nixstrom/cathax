@@ -1,0 +1,20 @@
+# Environment files with secrets
+.env
+.env.local
+.env.production
+
+# Deno
+.deno_dir/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
