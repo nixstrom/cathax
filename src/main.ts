@@ -104,14 +104,10 @@ if (!TOKEN) {
 	console.error("Or run: SUREHUB_TOKEN='your-token-here' deno task start")
 }
 
-// Set up cron job to run every 10 seconds
-
-Deno.cron("sample cron", "*/10 * * * *", () => {
+// Set up cron job to run at 3 AM CEST daily (1 AM UTC)
+Deno.cron("assign-pets", "0 1 * * *", () => {
 	console.log("🚀 Cron job scheduler started!")
-
-	console.log("📅 API call scheduled for every 10 seconds")
-
+	console.log("📅 API call scheduled for 3:00 AM CEST daily")
 	console.log("⏰ Current time:", new Date().toLocaleString())
-
 	assignAllPets()
 })

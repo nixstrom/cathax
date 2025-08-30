@@ -34,7 +34,7 @@ cp env.example .env
 deno task start
 ```
 
-This will start the cron scheduler with API calls every 5 seconds for each
+This will start the cron scheduler with API calls at 3AM CEST (1AM UTC) for each
 configured cat.
 
 ### 3. Test the system
@@ -100,17 +100,17 @@ Edit the `callDailyAPI()` function in `main.ts` to:
 ### Adding More Cron Jobs
 
 ```typescript
-import { cron } from "https://deno.land/x/deno_cron@v1.0.0/cron.ts"
+import { cron } from "https://deno.land/x/deno_cron@v1.0.0/cron.ts";
 
 // Add hourly job
 const hourlyJob = cron("0 * * * *", () => {
-	console.log("Hourly task executed")
-})
+	console.log("Hourly task executed");
+});
 
 // Add weekly job
 const weeklyJob = cron("0 9 * * 1", () => {
-	console.log("Weekly Monday task executed")
-})
+	console.log("Weekly Monday task executed");
+});
 ```
 
 ## Available Tasks
@@ -124,7 +124,7 @@ const weeklyJob = cron("0 9 * * 1", () => {
 The project uses the official Deno cron library:
 
 ```typescript
-import { cron } from "https://deno.land/x/deno_cron@v1.0.0/cron.ts"
+import { cron } from "https://deno.land/x/deno_cron@v1.0.0/cron.ts";
 ```
 
 ## API Configuration
