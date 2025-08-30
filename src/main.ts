@@ -20,9 +20,6 @@ async function loadEnv() {
 	}
 }
 
-// Load environment variables before proceeding
-await loadEnv()
-
 const CATS = [
 	{
 		catName: "Perrin",
@@ -41,20 +38,17 @@ const ACTIONS = {
 	UNASSIGN: 2,
 } as const
 
-// Get token from environment variable
-const TOKEN = Deno.env.get("SUREHUB_TOKEN")
-
-if (!TOKEN) {
-	console.error("❌ SUREHUB_TOKEN environment variable is required!")
-	console.error("Please set it before running the application:")
-	console.error("export SUREHUB_TOKEN='your-token-here'")
-	console.error("Or run: SUREHUB_TOKEN='your-token-here' deno task start")
-}
-
 /**
  * Assigns all cats to their respective feeders
  */
 async function assignAllPets() {
+	// Check if we have a token
+	const TOKEN = Deno.env.get("SUREHUB_TOKEN")
+	if (!TOKEN) {
+		console.error("❌ No SUREHUB_TOKEN available - skipping API calls")
+		return
+	}
+
 	try {
 		console.log(
 			`[${
@@ -85,12 +79,12 @@ async function assignAllPets() {
 			if (response.ok) {
 				const result = await response.json()
 				console.log(
-					`✅ Successfully assigned ${cat.catName} from feeder:`,
+					`✅ Successfully assigned ${cat.catName} to feeder:`,
 					result,
 				)
 			} else {
 				console.error(
-					`❌ Failed to unassign ${cat.catName}:`,
+					`❌ Failed to assign ${cat.catName}:`,
 					response.status,
 					response.statusText,
 				)
@@ -105,32 +99,57 @@ async function assignAllPets() {
 	}
 }
 
-// Set up cron job to run every 10 seconds
-Deno.cron("sample cron", "*/10 * * * *", () => {
-	console.log("🚀 Cron job scheduler started!")
-	console.log("📅 API call scheduled for every 10 seconds")
-	console.log("⏰ Current time:", new Date().toLocaleString())
-	assignAllPets()
-})
-
-// For testing: you can manually trigger the API call
+// Main execution block
 if (import.meta.main) {
-	console.log(
-		"🧪 To test the API call immediately, uncomment the line below:",
-	)
-	// callDailyAPI(); // Uncomment this to test immediately
+	// Load environment variables before proceeding
+	await loadEnv()
 
-	// Keep the process alive
-	console.log("⏳ Cron scheduler is running. Press Ctrl+C to stop.")
+	// Get token from environment variable
+	const TOKEN = Deno.env.get("SUREHUB_TOKEN")
 
-	// Simple way to keep the process running
-	const keepAlive = setInterval(() => {
-		// This keeps the process alive
-	}, 60000) // Check every minute
+	if (!TOKEN) {
+		console.error("❌ SUREHUB_TOKEN environment variable is required!")
+		console.error("Please set it before running the application:")
+		console.error("export SUREHUB_TOKEN='your-token-here'")
+		console.error("Or run: SUREHUB_TOKEN='your-token-here' deno task start")
+		// Don't exit on Deno Deploy - just log the error and continue
+		console.error("⚠️  Continuing without token - API calls will fail")
+	} else {
+		console.log("✅ Token loaded successfully")
+	}
 
-	// Handle shutdown gracefully
-	addEventListener("beforeunload", () => {
-		console.log("🛑 Shutting down cron scheduler...")
-		clearInterval(keepAlive)
-	})
+	console.log("🚀 Starting pet assignment...")
+	console.log("⏰ Current time:", new Date().toLocaleString())
+
+	// Run the pet assignment immediately
+	await assignAllPets()
+
+	console.log("✅ Pet assignment completed")
+
+	// For local development: keep process alive if running locally
+	if (Deno.env.get("DENO_DEPLOYMENT_ID") === undefined) {
+		console.log("🔄 Running in local mode - keeping process alive")
+
+		// Keep the process alive and handle shutdown gracefully
+		const keepAlive = setInterval(() => {
+			// This keeps the process alive
+		}, 60000) // Check every minute
+
+		// Handle shutdown gracefully (Deno Deploy compatible)
+		Deno.addSignalListener("SIGINT", () => {
+			console.log("\n🛑 Shutting down...")
+			clearInterval(keepAlive)
+			// Don't use Deno.exit() on Deno Deploy
+		})
+
+		// Also handle beforeunload for other shutdown scenarios
+		addEventListener("beforeunload", () => {
+			console.log("🛑 Shutting down...")
+			clearInterval(keepAlive)
+		})
+	} else {
+		console.log(
+			"🚀 Running on Deno Deploy - process will terminate after completion",
+		)
+	}
 }
