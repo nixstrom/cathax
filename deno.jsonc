@@ -1,10 +1,11 @@
 {
 	"tasks": {
 		"dev": "deno run --watch src/main.ts",
-		"start": "deno run --allow-net --allow-env --allow-read --allow-cron src/main.ts",
-		"test": "deno run --allow-net --allow-env --allow-read --allow-cron src/main_test.ts",
+		"start": "deno run --allow-net --allow-env --allow-read --unstable src/main.ts",
+		"test": "deno run --allow-net --allow-env --allow-read src/main_test.ts",
 		"bench": "deno run --allow-net src/main_bench.ts"
 	},
+	"unstable": ["cron"],
 	"fmt": {
 		"options": {
 			"useTabs": true,
@@ -16,15 +17,5 @@
 			"include": ["./"],
 			"exclude": ["node_modules/", ".git/"]
 		}
-	},
-	"deploy": {
-		"project": "cathax-cron",
-		"crons": [
-			{
-				"name": "assign-pets",
-				"schedule": "*/10 * * * * *",
-				"entrypoint": "src/main.ts"
-			}
-		]
 	}
 }

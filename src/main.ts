@@ -42,13 +42,6 @@ const ACTIONS = {
  * Assigns all cats to their respective feeders
  */
 async function assignAllPets() {
-	// Check if we have a token
-	const TOKEN = Deno.env.get("SUREHUB_TOKEN")
-	if (!TOKEN) {
-		console.error("❌ No SUREHUB_TOKEN available - skipping API calls")
-		return
-	}
-
 	try {
 		console.log(
 			`[${
@@ -99,57 +92,26 @@ async function assignAllPets() {
 	}
 }
 
-// Main execution block
-if (import.meta.main) {
-	// Load environment variables before proceeding
-	await loadEnv()
+// Load environment variables before proceeding
+await loadEnv()
 
-	// Get token from environment variable
-	const TOKEN = Deno.env.get("SUREHUB_TOKEN")
+const TOKEN = Deno.env.get("SUREHUB_TOKEN")
 
-	if (!TOKEN) {
-		console.error("❌ SUREHUB_TOKEN environment variable is required!")
-		console.error("Please set it before running the application:")
-		console.error("export SUREHUB_TOKEN='your-token-here'")
-		console.error("Or run: SUREHUB_TOKEN='your-token-here' deno task start")
-		// Don't exit on Deno Deploy - just log the error and continue
-		console.error("⚠️  Continuing without token - API calls will fail")
-	} else {
-		console.log("✅ Token loaded successfully")
-	}
+if (!TOKEN) {
+	console.error("❌ SUREHUB_TOKEN environment variable is required!")
+	console.error("Please set it before running the application:")
+	console.error("export SUREHUB_TOKEN='your-token-here'")
+	console.error("Or run: SUREHUB_TOKEN='your-token-here' deno task start")
+}
 
-	console.log("🚀 Starting pet assignment...")
+// Set up cron job to run every 10 seconds
+
+Deno.cron("sample cron", "*/10 * * * *", () => {
+	console.log("🚀 Cron job scheduler started!")
+
+	console.log("📅 API call scheduled for every 10 seconds")
+
 	console.log("⏰ Current time:", new Date().toLocaleString())
 
-	// Run the pet assignment immediately
-	await assignAllPets()
-
-	console.log("✅ Pet assignment completed")
-
-	// For local development: keep process alive if running locally
-	if (Deno.env.get("DENO_DEPLOYMENT_ID") === undefined) {
-		console.log("🔄 Running in local mode - keeping process alive")
-
-		// Keep the process alive and handle shutdown gracefully
-		const keepAlive = setInterval(() => {
-			// This keeps the process alive
-		}, 60000) // Check every minute
-
-		// Handle shutdown gracefully (Deno Deploy compatible)
-		Deno.addSignalListener("SIGINT", () => {
-			console.log("\n🛑 Shutting down...")
-			clearInterval(keepAlive)
-			// Don't use Deno.exit() on Deno Deploy
-		})
-
-		// Also handle beforeunload for other shutdown scenarios
-		addEventListener("beforeunload", () => {
-			console.log("🛑 Shutting down...")
-			clearInterval(keepAlive)
-		})
-	} else {
-		console.log(
-			"🚀 Running on Deno Deploy - process will terminate after completion",
-		)
-	}
-}
+	assignAllPets()
+})
