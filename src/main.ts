@@ -51,7 +51,6 @@ if (!TOKEN) {
 	console.error("Please set it before running the application:");
 	console.error("export SUREHUB_TOKEN='your-token-here'");
 	console.error("Or run: SUREHUB_TOKEN='your-token-here' deno task start");
-	Deno.exit(1);
 }
 
 // Example API call function
