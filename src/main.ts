@@ -38,6 +38,88 @@ const ACTIONS = {
 	UNASSIGN: 2,
 } as const;
 
+async function fetchWithRetry(
+	input: RequestInfo | URL,
+	init: RequestInit,
+	options?: {
+		maxAttempts?: number;
+		baseDelayMs?: number;
+	}
+) {
+	const maxAttempts = options?.maxAttempts ?? 3;
+	const baseDelayMs = options?.baseDelayMs ?? 500;
+
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+		try {
+			const response = await fetch(input, init);
+
+			// Retry on transient responses
+			if (
+				response.ok ||
+				!(
+					response.status === 429 ||
+					(response.status >= 500 && response.status <= 599) ||
+					response.status === 408
+				)
+			) {
+				return response;
+			}
+
+			if (attempt === maxAttempts) return response;
+		} catch (_error) {
+			if (attempt === maxAttempts) throw _error;
+		}
+
+		// Exponential backoff with jitter
+		const expDelay = baseDelayMs * 2 ** (attempt - 1);
+		const jitter = Math.floor(Math.random() * (expDelay / 2));
+		const delayMs = expDelay + jitter;
+		await new Promise((resolve) => setTimeout(resolve, delayMs));
+	}
+
+	// Should be unreachable
+	throw new Error("fetchWithRetry: exhausted retries");
+}
+
+type Cat = (typeof CATS)[number];
+
+async function assignCat(cat: Cat, token: string) {
+	console.log(`🐱 Processing cat ID: ${cat.catId}, feeder ID: ${cat.feederId}`);
+
+	let response: Response;
+	try {
+		response = await fetchWithRetry(
+			`https://app-api.production.surehub.io/api/v2/device/${cat.feederId}/tag/async`,
+			{
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify([
+					{ tag_id: cat.catId, request_action: ACTIONS.ASSIGN },
+				]),
+			},
+			{ maxAttempts: 3, baseDelayMs: 500 },
+		);
+	} catch (_error) {
+		console.error(`❌ Failed to assign ${cat.catName} after retries:`, _error);
+		return;
+	}
+
+	if (response.ok) {
+		const result = await response.json();
+		console.log(`✅ Successfully assigned ${cat.catName} to feeder:`, result);
+		return;
+	}
+
+	console.error(
+		`❌ Failed to assign ${cat.catName}:`,
+		response.status,
+		response.statusText,
+	);
+}
+
 /**
  * Assigns all cats to their respective feeders
  */
@@ -49,40 +131,11 @@ async function assignAllPets() {
 			} cats...`
 		);
 
-		// Iterate through each cat and make the API request
-		for (const cat of CATS) {
-			console.log(
-				`🐱 Processing cat ID: ${cat.catId}, feeder ID: ${cat.feederId}`
-			);
-
-			const response = await fetch(
-				`https://app-api.production.surehub.io/api/v2/device/${cat.feederId}/tag/async`,
-				{
-					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${TOKEN}`,
-					},
-					body: JSON.stringify([
-						{ tag_id: cat.catId, request_action: ACTIONS.ASSIGN },
-					]),
-				}
-			);
-
-			if (response.ok) {
-				const result = await response.json();
-				console.log(
-					`✅ Successfully assigned ${cat.catName} to feeder:`,
-					result
-				);
-			} else {
-				console.error(
-					`❌ Failed to assign ${cat.catName}:`,
-					response.status,
-					response.statusText
-				);
-			}
-		}
+		// Process cats sequentially via a promise-based reduce.
+		await CATS.reduce(async (prev, cat) => {
+			await prev;
+			await assignCat(cat, TOKEN);
+		}, Promise.resolve());
 
 		console.log(
 			`[${new Date().toISOString()}] Completed API calls for all cats`
@@ -95,13 +148,14 @@ async function assignAllPets() {
 // Load environment variables before proceeding
 await loadEnv();
 
-const TOKEN = Deno.env.get("SUREHUB_TOKEN");
+const TOKEN = Deno.env.get("SUREHUB_TOKEN")!;
 
 if (!TOKEN) {
 	console.error("❌ SUREHUB_TOKEN environment variable is required!");
 	console.error("Please set it before running the application:");
 	console.error("export SUREHUB_TOKEN='your-token-here'");
 	console.error("Or run: SUREHUB_TOKEN='your-token-here' deno task start");
+	throw new Error("Missing required environment variable: SUREHUB_TOKEN");
 }
 
 // Set up cron job to run every minute
