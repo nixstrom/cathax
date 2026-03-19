@@ -15,7 +15,7 @@ async function loadEnv() {
 			}
 		}
 		console.log("✅ Environment variables loaded from .env file");
-	} catch (error) {
+	} catch (_error) {
 		console.log("ℹ️  No .env file found, using system environment variables");
 	}
 }
@@ -104,10 +104,10 @@ if (!TOKEN) {
 	console.error("Or run: SUREHUB_TOKEN='your-token-here' deno task start");
 }
 
-// Set up cron job to run at 3 AM CEST daily (1 AM UTC)
-Deno.cron("assign-pets", "0 1 * * *", () => {
+// Set up cron job to run every minute
+Deno.cron("assign-pets", "* * * * *", () => {
 	console.log("🚀 Cron job scheduler started!");
-	console.log("📅 API call scheduled for 3:00 AM CEST daily");
+	console.log("📅 API call scheduled for every minute");
 	console.log("⏰ Current time:", new Date().toLocaleString());
 	assignAllPets();
 });
