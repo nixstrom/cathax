@@ -159,9 +159,6 @@ if (!TOKEN) {
 }
 
 // Set up cron job to run at 2 AM CET daily (1 AM UTC)
-Deno.cron("assign-pets", "0 1 * * *", () => {
-	console.log("🚀 Cron job scheduler started!");
-	console.log("📅 API call scheduled for 2:00 AM CET daily");
-	console.log("⏰ Current time:", new Date().toLocaleString());
-	assignAllPets();
+Deno.cron("assign-pets", "0 1 * * *", async () => {
+	await assignAllPets();
 });
