@@ -158,7 +158,5 @@ if (!TOKEN) {
 	throw new Error("Missing required environment variable: SUREHUB_TOKEN");
 }
 
-// Set up cron job to run at 2 AM CET daily (1 AM UTC)
-Deno.cron("assign-pets", "0 1 * * *", async () => {
-	await assignAllPets();
-});
+console.log("🚀 Starting assign-pets...");
+await assignAllPets();

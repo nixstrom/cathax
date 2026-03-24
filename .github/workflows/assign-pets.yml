@@ -1,0 +1,16 @@
+name: Assign pets to feeders
+
+on:
+  schedule:
+    - cron: "0 1 * * *" # 2 AM CET (1 AM UTC)
+  workflow_dispatch: # allow manual runs
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+      - run: deno run --allow-net --allow-env src/main.ts
+        env:
+          SUREHUB_TOKEN: ${{ secrets.SUREHUB_TOKEN }}
