@@ -2,7 +2,7 @@ name: Assign pets to feeders
 
 on:
   schedule:
-    - cron: "0 0,4,8,12,16 * * *" # every 4h from 02:00 CEST; skips 22:00 CEST (20 UTC)
+    - cron: "0 0,8,12,16 * * *" # every 4h from 02:00 CEST; skips 14, 22 CEST
   workflow_dispatch: # allow manual runs
 
 jobs:
