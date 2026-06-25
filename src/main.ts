@@ -158,5 +158,12 @@ if (!TOKEN) {
 	throw new Error("Missing required environment variable: SUREHUB_TOKEN");
 }
 
-console.log("🚀 Starting assign-pets...");
-await assignAllPets();
+if (Deno.env.get("DENO_DEPLOYMENT_ID") !== undefined) {
+	// Deno Deploy requires a registered handler (cron or serve) to start the isolate.
+	Deno.cron("assign-pets", "0 0,8,12,16 * * *", async () => {
+		await assignAllPets();
+	});
+} else {
+	console.log("🚀 Starting assign-pets...");
+	await assignAllPets();
+}
